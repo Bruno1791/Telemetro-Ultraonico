@@ -1,0 +1,54 @@
+/* se crea una función que será llamada en el void loop, con el fin de que el código sea más ordenado, según las buenas prácticas de programación. Este código permite leer la distancia de un objeto situado dentro del rango de operación, a través de repetidos ciclos de milisegundos en los cuales recibe el eco de ondas de ultrasonido que impactan sobre el objeto que se acerca. Es por esto que primero se genera un HIGH y luego un LOW, pero previamente se utiliza un un LOW para limpiar el trigger, por un tiempo aún menor */
+long readUltrasonicDistance(int triggerPin, int echoPin)
+{
+  pinMode(triggerPin, OUTPUT);  // Inicializar LOW para limpiar trigger por 2 microsegundos
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2); // tiempo de retardo de 2 milisegundos
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);  // Inicializar trigger en HIGH por 10 milisegundos para comenzar
+  digitalWrite(triggerPin, LOW);
+  pinMode(echoPin, INPUT); // lectura de pin echo con el retorno de la señal
+  return pulseIn(echoPin, HIGH); // devuelve un valor de tipo long 
+}
+void setup()
+{
+  Serial.begin(9600); // comunicación con serial a 9600 baudios
+  pinMode(8, OUTPUT); // LED verde
+  pinMode(7, OUTPUT); // LED amarillo
+  pinMode(4, OUTPUT); // LED rojo
+}
+void loop()
+{
+  float distancia = 0.01723 * readUltrasonicDistance(2, 2); /* número entero dos decimales para la variable flotante, a la cual se le aplica un factor que depende de la velocidad del sonido en el aire y está relacionada con el fenómeno de la reflexión */
+if(distancia >333) // si la distancia es mayor al rango operacional, led apagados
+{
+digitalWrite(8,LOW);
+digitalWrite(7,LOW);
+digitalWrite(4,LOW);
+}
+  if((distancia <= 336) && (distancia >= 200)) // encendido led rojo entre 336 y 200
+{
+digitalWrite(4,HIGH);
+digitalWrite(7,LOW);
+digitalWrite(8,LOW);  
+} 
+  else {
+    digitalWrite(8, LOW); // en caso contrario se mantiene apagado el rojo
+  }
+  if((distancia < 200) && (distancia >= 100)) {
+    digitalWrite(7, HIGH); // si la distancia es entre 200 y 100 se enciende amarillo
+  } 
+  else {
+    digitalWrite(7, LOW); // caso contrario se mantiene apagado amarillo
+  }
+  if(distancia < 100) // si la distancia es menor a 100, se enciende verde
+{
+    digitalWrite(8, HIGH);
+  } 
+  else {
+    digitalWrite(8, LOW); //en caso contrario se mantiene apagado verde
+  }
+Serial.print(“distancia: “); // se presenta el string “distancia: “
+Serial.println(distancia+2) // se presenta el valor de distancia con la corrección de 2 unidades
+  delay(10); // pequeño delay para mejorar el funcionamiento del programa
+}
